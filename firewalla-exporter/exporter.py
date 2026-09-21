@@ -102,9 +102,13 @@ _tunnel_lock = threading.Lock()
 def _get_tunnel() -> SSHTunnelForwarder:
     global _tunnel
     with _tunnel_lock:
-        alive = _tunnel.is_alive() if callable(_tunnel.is_alive) else _tunnel.is_alive
-        if _tunnel and alive:
-            return _tunnel
+        if _tunnel:
+            try:
+                is_alive = _tunnel.is_alive
+                if callable(is_alive) and is_alive() or (not callable(is_alive) and is_alive):
+                    return _tunnel
+            except Exception:
+                pass
         if _tunnel:
             try:
                 _tunnel.stop()
