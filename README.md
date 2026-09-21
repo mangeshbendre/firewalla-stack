@@ -182,17 +182,79 @@ docker compose up -d prometheus  # after compose change
 
 ## Deploying to NAS
 
-```bash
-# On your dev machine
-scp -r . nas-user@nas-ip:/opt/firewalla-stack/
-scp -r secrets/ nas-user@nas-ip:/opt/firewalla-stack/secrets/
+### Prerequisites on the NAS
 
-# On the NAS
+- Docker and Docker Compose installed
+- Git installed (or use the scp method below)
+- Port 3000 accessible on your local network
+
+### Option A — Git clone (recommended, easy to update)
+
+```bash
+# SSH into the NAS
+ssh admin@<nas-ip>
+
+# Clone the repo
+git clone https://github.com/mangeshbendre/firewalla-stack.git
+cd firewalla-stack
+
+# Create secrets (never stored in git)
+mkdir -p secrets && chmod 700 secrets
+echo "your_firewalla_ssh_password" > secrets/firewalla_password
+echo "your_grafana_admin_password" > secrets/grafana_password
+chmod 600 secrets/*
+
+# Start the stack
+docker compose up -d
+```
+
+### Option B — Copy from dev machine (no git needed on NAS)
+
+```bash
+# From your dev machine — copy everything except local Docker state
+rsync -av --exclude='.git' ~/projects/firewalla-stack/ admin@<nas-ip>:/opt/firewalla-stack/
+
+# Copy secrets separately
+scp -r ~/projects/firewalla-stack/secrets/ admin@<nas-ip>:/opt/firewalla-stack/secrets/
+
+# SSH in and start
+ssh admin@<nas-ip>
 cd /opt/firewalla-stack
 docker compose up -d
 ```
 
-Grafana will be available at `http://<nas-ip>:3000`.
+### Verify it's running
+
+```bash
+docker compose ps
+# All 6 containers should show "Up"
+
+# Check Grafana is healthy
+curl http://localhost:3000/api/health
+```
+
+Open Grafana at `http://<nas-ip>:3000` — login with `admin` and the password from `secrets/grafana_password`.
+
+### Updating to latest version
+
+```bash
+ssh admin@<nas-ip>
+cd /opt/firewalla-stack       # or wherever you deployed
+
+git pull                       # get latest code
+
+# Rebuild custom containers and restart
+docker compose up -d --build
+
+# Grafana picks up new dashboards automatically within 30s
+```
+
+### Stopping the stack
+
+```bash
+docker compose down            # stop containers, keep data volumes
+docker compose down -v         # stop and delete all stored data (destructive)
+```
 
 ## Project Structure
 
