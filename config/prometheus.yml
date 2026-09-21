@@ -1,0 +1,8 @@
+global:
+  scrape_interval: 60s
+  evaluation_interval: 60s
+
+scrape_configs:
+  - job_name: firewalla
+    static_configs:
+      - targets: ["firewalla-exporter:9101"]

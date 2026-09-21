@@ -1,0 +1,333 @@
+{
+  "uid": "fw-dns-sec",
+  "title": "DNS Security",
+  "schemaVersion": 38,
+  "version": 1,
+  "editable": true,
+  "refresh": "1m",
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "tags": ["firewalla", "security", "dns"],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Active Alarms",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "area",
+        "textMode": "auto",
+        "orientation": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "firewalla_alarms_active_total",
+          "legendFormat": "Alarms",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Blocked Queries (24h)",
+      "type": "stat",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "area",
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 1000 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"firewalla\", type=\"dns_blocked\"} [24h]))",
+          "legendFormat": "Blocked",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Allowed Queries (24h)",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "area",
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "blue", "value": null }]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"firewalla\", type=\"dns_allowed\"} [24h]))",
+          "legendFormat": "Allowed",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Block Rate",
+      "type": "stat",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.1 },
+              { "color": "red", "value": 0.3 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"firewalla\", type=\"dns_blocked\"} [24h])) / (sum(count_over_time({job=\"firewalla\", type=\"dns_allowed\"} [24h])) + sum(count_over_time({job=\"firewalla\", type=\"dns_blocked\"} [24h])))",
+          "legendFormat": "Block Rate",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Blocked vs Allowed Query Rate",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 4, "w": 16, "h": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "showPoints": "auto",
+            "spanNulls": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Blocked/sec" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Allowed/sec" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "expr": "sum(rate({job=\"firewalla\", type=\"dns_allowed\"} [5m]))",
+          "legendFormat": "Allowed/sec",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate({job=\"firewalla\", type=\"dns_blocked\"} [5m]))",
+          "legendFormat": "Blocked/sec",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Active Alarms Over Time",
+      "type": "timeseries",
+      "gridPos": { "x": 16, "y": 4, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "fixedColor": "red", "mode": "fixed" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "showPoints": "auto",
+            "spanNulls": true
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "firewalla_alarms_active_total",
+          "legendFormat": "Active Alarms",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Top Blocked Domains (last 24h)",
+      "type": "barchart",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 12 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "options": {
+        "orientation": "horizontal",
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" },
+        "barWidth": 0.7,
+        "fillOpacity": 80,
+        "gradientMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "fixedColor": "red", "mode": "fixed" },
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false } }
+        }
+      },
+      "targets": [
+        {
+          "expr": "topk(15, sum by(domain) (count_over_time({job=\"firewalla\", type=\"dns_blocked\"} | regexp \"dn=(?P<domain>[^ ]+)\" [24h])))",
+          "legendFormat": "{{domain}}",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Blocked Queries per Device (last 24h)",
+      "type": "barchart",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 12 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "options": {
+        "orientation": "horizontal",
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" },
+        "barWidth": 0.7,
+        "fillOpacity": 80
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" },
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false } }
+        }
+      },
+      "targets": [
+        {
+          "expr": "topk(15, sum by(mac) (count_over_time({job=\"firewalla\", type=\"dns_blocked\"} | regexp \"mac=(?P<mac>[0-9a-fA-F:]{17})\" [24h])))",
+          "legendFormat": "{{mac}}",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Recent Security Alarms",
+      "type": "logs",
+      "gridPos": { "x": 0, "y": 24, "w": 24, "h": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "showTime": true,
+        "showLabels": true,
+        "showCommonLabels": false
+      },
+      "targets": [
+        {
+          "expr": "{job=\"firewalla\", type=\"alarm\"}",
+          "legendFormat": "",
+          "refId": "A",
+          "maxLines": 200
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Recent Blocked DNS Queries",
+      "type": "logs",
+      "gridPos": { "x": 0, "y": 32, "w": 24, "h": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "options": {
+        "dedupStrategy": "signature",
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": true
+      },
+      "targets": [
+        {
+          "expr": "{job=\"firewalla\", type=\"dns_blocked\"}",
+          "legendFormat": "",
+          "refId": "A",
+          "maxLines": 500
+        }
+      ]
+    }
+  ]
+}

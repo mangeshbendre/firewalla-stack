@@ -1,0 +1,126 @@
+{
+  "uid": "fw-domains",
+  "title": "Top Domains",
+  "schemaVersion": 38,
+  "version": 1,
+  "editable": true,
+  "refresh": "2m",
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "tags": ["firewalla"],
+  "panels": [
+    {
+      "id": 1,
+      "type": "barchart",
+      "title": "Top 20 Domains – Overall",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 12 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "fillOpacity": 80,
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [{
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "expr": "topk(20, sum by(domain) (firewalla_top_domain_bytes))",
+        "legendFormat": "{{domain}}",
+        "instant": true,
+        "refId": "A"
+      }]
+    },
+    {
+      "id": 2,
+      "type": "barchart",
+      "title": "Top 20 Domains – Download",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 12 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "fillOpacity": 80,
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [{
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "expr": "topk(20, sum by(domain) (firewalla_top_domain_bytes{direction=\"download\"}))",
+        "legendFormat": "{{domain}}",
+        "instant": true,
+        "refId": "A"
+      }]
+    },
+    {
+      "id": 3,
+      "type": "barchart",
+      "title": "Top 20 Domains – Upload",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 12 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "fillOpacity": 80,
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [{
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "expr": "topk(20, sum by(domain) (firewalla_top_domain_bytes{direction=\"upload\"}))",
+        "legendFormat": "{{domain}}",
+        "instant": true,
+        "refId": "A"
+      }]
+    },
+    {
+      "id": 4,
+      "type": "table",
+      "title": "All Tracked Domains",
+      "gridPos": { "x": 0, "y": 24, "w": 24, "h": 14 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "unit": "bytes" },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "domain" }, "properties": [{ "id": "custom.width", "value": 320 }] },
+          { "matcher": { "id": "byName", "options": "direction" }, "properties": [{ "id": "custom.width", "value": 100 }] },
+          { "matcher": { "id": "byName", "options": "Value" }, "properties": [{ "id": "displayName", "value": "Bytes" }, { "id": "unit", "value": "bytes" }] }
+        ]
+      },
+      "options": {
+        "sortBy": [{ "displayName": "Bytes", "desc": true }],
+        "footer": { "show": false }
+      },
+      "targets": [{
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "expr": "sum by(domain, direction) (firewalla_top_domain_bytes)",
+        "legendFormat": "{{domain}}",
+        "instant": true,
+        "refId": "A"
+      }]
+    }
+  ]
+}

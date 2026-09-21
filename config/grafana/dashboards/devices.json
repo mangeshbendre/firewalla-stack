@@ -1,0 +1,208 @@
+{
+  "uid": "fw-devices",
+  "title": "Device Detail",
+  "schemaVersion": 38,
+  "version": 1,
+  "editable": true,
+  "refresh": "2m",
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "tags": ["firewalla"],
+  "templating": {
+    "list": [
+      {
+        "name": "device",
+        "label": "Device",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "query": "label_values(firewalla_device_download_bytes, name)",
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {}
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Download (24h)",
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "none" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "firewalla_device_download_bytes{name=\"$device\"}", "legendFormat": "Download", "refId": "A" }]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Upload (24h)",
+      "gridPos": { "x": 8, "y": 0, "w": 8, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "none" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "firewalla_device_upload_bytes{name=\"$device\"}", "legendFormat": "Upload", "refId": "A" }]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Active Connections",
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "none" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "firewalla_device_active_connections{name=\"$device\"}", "legendFormat": "Connections", "refId": "A" }]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Download Over Time",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "fixed", "fixedColor": "blue" },
+          "custom": { "lineWidth": 2, "fillOpacity": 15 }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "single", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }
+      },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "firewalla_device_download_bytes{name=\"$device\"}", "legendFormat": "Download", "refId": "A" }]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Upload Over Time",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "fixed", "fixedColor": "green" },
+          "custom": { "lineWidth": 2, "fillOpacity": 15 }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "single", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }
+      },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "firewalla_device_upload_bytes{name=\"$device\"}", "legendFormat": "Upload", "refId": "A" }]
+    },
+    {
+      "id": 6,
+      "type": "barchart",
+      "title": "Top Domains – Download",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 10 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "fillOpacity": 80,
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [{
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "expr": "topk(10, firewalla_top_domain_bytes{name=\"$device\", direction=\"download\"})",
+        "legendFormat": "{{domain}}",
+        "instant": true,
+        "refId": "A"
+      }]
+    },
+    {
+      "id": 7,
+      "type": "barchart",
+      "title": "Top Domains – Upload",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 10 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "fillOpacity": 80,
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [{
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "expr": "topk(10, firewalla_top_domain_bytes{name=\"$device\", direction=\"upload\"})",
+        "legendFormat": "{{domain}}",
+        "instant": true,
+        "refId": "A"
+      }]
+    },
+    {
+      "id": 8,
+      "type": "table",
+      "title": "All Domains",
+      "gridPos": { "x": 0, "y": 22, "w": 24, "h": 10 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "unit": "bytes" },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "domain" }, "properties": [{ "id": "custom.width", "value": 300 }] },
+          { "matcher": { "id": "byName", "options": "direction" }, "properties": [{ "id": "custom.width", "value": 100 }] },
+          { "matcher": { "id": "byName", "options": "Value" }, "properties": [{ "id": "displayName", "value": "Bytes" }, { "id": "unit", "value": "bytes" }] }
+        ]
+      },
+      "options": {
+        "sortBy": [{ "displayName": "Bytes", "desc": true }],
+        "footer": { "show": false }
+      },
+      "transformations": [
+        { "id": "labelsToFields", "options": { "valueLabel": "domain" } },
+        { "id": "merge", "options": {} }
+      ],
+      "targets": [{
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "expr": "firewalla_top_domain_bytes{name=\"$device\"}",
+        "legendFormat": "{{domain}} ({{direction}})",
+        "instant": true,
+        "refId": "A"
+      }]
+    }
+  ]
+}

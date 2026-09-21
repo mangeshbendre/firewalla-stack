@@ -1,0 +1,187 @@
+{
+  "uid": "fw-overview",
+  "title": "Firewalla Overview",
+  "schemaVersion": 38,
+  "version": 1,
+  "editable": true,
+  "refresh": "2m",
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "tags": ["firewalla"],
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Total Download (24h)",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "none" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(firewalla_device_download_bytes)", "legendFormat": "Download", "refId": "A" }]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Total Upload (24h)",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "none" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(firewalla_device_upload_bytes)", "legendFormat": "Upload", "refId": "A" }]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Active Alarms",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "background", "graphMode": "none" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "firewalla_alarms_active_total", "legendFormat": "Alarms", "refId": "A" }]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Active Connections",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "none" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "sum(firewalla_device_active_connections)", "legendFormat": "Connections", "refId": "A" }]
+    },
+    {
+      "id": 5,
+      "type": "barchart",
+      "title": "Top 15 Downloaders (24h)",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 12 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xTickLabelRotation": 0,
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "fillOpacity": 80,
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [{
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "expr": "topk(15, firewalla_device_download_bytes)",
+        "legendFormat": "{{name}}",
+        "instant": true,
+        "refId": "A"
+      }]
+    },
+    {
+      "id": 6,
+      "type": "barchart",
+      "title": "Top 15 Uploaders (24h)",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 12 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "xTickLabelRotation": 0,
+        "barWidth": 0.7,
+        "groupWidth": 0.7,
+        "fillOpacity": 80,
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [{
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "expr": "topk(15, firewalla_device_upload_bytes)",
+        "legendFormat": "{{name}}",
+        "instant": true,
+        "refId": "A"
+      }]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Active Alarms Over Time",
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "fixed", "fixedColor": "red" },
+          "custom": { "lineWidth": 2, "fillOpacity": 20 }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "single", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }
+      },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "firewalla_alarms_active_total", "legendFormat": "Active Alarms", "refId": "A" }]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Exporter Scrape Duration",
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "fixed", "fixedColor": "blue" },
+          "custom": { "lineWidth": 1, "fillOpacity": 10 }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "single", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }
+      },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "prometheus" }, "expr": "firewalla_scrape_duration_seconds", "legendFormat": "Scrape Duration", "refId": "A" }]
+    }
+  ]
+}

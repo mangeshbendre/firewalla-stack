@@ -1,0 +1,83 @@
+services:
+
+  loki:
+    image: grafana/loki:2.9.10
+    container_name: loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./config/loki.yml:/etc/loki/loki.yml:ro
+      - loki_data:/loki
+    command: -config.file=/etc/loki/loki.yml
+
+  promtail:
+    image: grafana/promtail:2.9.10
+    container_name: promtail
+    restart: unless-stopped
+    volumes:
+      - ./config/promtail.yml:/etc/promtail/promtail.yml:ro
+    command: -config.file=/etc/promtail/promtail.yml
+    depends_on: [loki]
+
+  log-forwarder:
+    build: ./log-forwarder
+    container_name: log-forwarder
+    restart: unless-stopped
+    volumes:
+      - ./secrets:/run/secrets:ro
+    environment:
+      - FIREWALLA_HOST=192.168.50.1
+      - FIREWALLA_USER=pi
+      - LOKI_URL=http://loki:3100
+      - PUSH_INTERVAL=5
+    depends_on: [loki]
+
+  prometheus:
+    image: prom/prometheus:v2.51.2
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=90d
+
+  firewalla-exporter:
+    build: ./firewalla-exporter
+    container_name: firewalla-exporter
+    restart: unless-stopped
+    ports:
+      - "9101:9101"
+    volumes:
+      - ./secrets:/run/secrets:ro
+    environment:
+      - FIREWALLA_HOST=192.168.50.1
+      - FIREWALLA_USER=pi
+      - SCRAPE_INTERVAL=60
+      - FLOW_WINDOW_SECONDS=86400
+
+  grafana:
+    image: grafana/grafana:11.1.4
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./secrets:/run/secrets:ro
+      - ./config/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - ./config/grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/grafana_password
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on: [loki, prometheus]
+
+volumes:
+  loki_data:
+  prometheus_data:
+  grafana_data:
